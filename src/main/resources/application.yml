@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: study-loggers
+      auto-offset-reset: earliest
+
+study:
+  topic-name: advice-topic
+  messages-per-request: 10
