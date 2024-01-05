@@ -28,9 +28,7 @@ public class HelloKafkaController {
 
     @GetMapping("/hello")
     public String hello() throws InterruptedException {
-        CountDownLatch latch;
-
-        latch = new CountDownLatch((messagesPerRequest));
+        CountDownLatch latch = new CountDownLatch((messagesPerRequest));
         IntStream.range(0, messagesPerRequest)
             .forEach(i -> this.template.send(topicName, String.valueOf(i),
                 new PracticalAdvice("A Practical Advice", i))
