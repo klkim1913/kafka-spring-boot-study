@@ -1,16 +1,19 @@
 package com.study.kafka.simplekafka;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.*;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
@@ -53,5 +56,73 @@ public class SimpleKafkaApplication {
 	@Bean
 	public NewTopic adviceTopic() {
 		return new NewTopic(topicName, 3, (short) 1);
+	}
+
+	// Consumer configuration
+
+	// 한 가지 역직렬화 유형만 필요할 경우엔 아래 주석의 컨슈머 설정 처리만 하면 된다.
+
+	/*
+	@Bean
+	public Map<String, Object> consumerConfigs() {
+		Map<String, Object> props = new HashMap<>(
+			kafkaProperties.buildProducerProperties(null)
+		);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, "study-loggers");
+
+		return props;
+	}
+	 */
+
+	@Bean
+	public ConsumerFactory<String, Object> consumerFactory() {
+		final JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>();
+		jsonDeserializer.addTrustedPackages("*");
+		return new DefaultKafkaConsumerFactory<>(
+			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), jsonDeserializer
+		);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(consumerFactory());
+
+		return factory;
+	}
+
+	// String Consumer Configuration
+
+	@Bean
+	public ConsumerFactory<String, String> stringConsumerFactory() {
+		return new DefaultKafkaConsumerFactory<>(
+			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), new StringDeserializer()
+		);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerStringContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(stringConsumerFactory());
+
+		return factory;
+	}
+
+	// Byte Array Consumer Configuration
+
+	@Bean
+	public ConsumerFactory<String, byte[]> byteArrayConsumerFactory() {
+		return new DefaultKafkaConsumerFactory<>(
+			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), new ByteArrayDeserializer()
+		);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, byte[]> kafkaListenerByteArrayContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(byteArrayConsumerFactory());
+		return factory;
 	}
 }
