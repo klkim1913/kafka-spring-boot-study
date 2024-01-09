@@ -81,7 +81,7 @@ public class SimpleKafkaApplication {
 		final JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>();
 		jsonDeserializer.addTrustedPackages("*");
 		return new DefaultKafkaConsumerFactory<>(
-			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), jsonDeserializer
+			kafkaProperties.buildConsumerProperties(null), new StringDeserializer(), jsonDeserializer
 		);
 	}
 
@@ -98,7 +98,7 @@ public class SimpleKafkaApplication {
 	@Bean
 	public ConsumerFactory<String, String> stringConsumerFactory() {
 		return new DefaultKafkaConsumerFactory<>(
-			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), new StringDeserializer()
+			kafkaProperties.buildConsumerProperties(null), new StringDeserializer(), new StringDeserializer()
 		);
 	}
 
@@ -115,7 +115,7 @@ public class SimpleKafkaApplication {
 	@Bean
 	public ConsumerFactory<String, byte[]> byteArrayConsumerFactory() {
 		return new DefaultKafkaConsumerFactory<>(
-			kafkaProperties.buildProducerProperties(null), new StringDeserializer(), new ByteArrayDeserializer()
+			kafkaProperties.buildConsumerProperties(null), new StringDeserializer(), new ByteArrayDeserializer()
 		);
 	}
 
